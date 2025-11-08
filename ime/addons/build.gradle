@@ -1,0 +1,32 @@
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+}
+
+apply from: "${rootDir}/gradle/android_general.gradle"
+
+android {
+    namespace 'com.anysoftkeyboard.addons'
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+        allWarningsAsErrors = false
+    }
+}
+
+dependencies {
+    implementation project(':ime:base')
+    implementation project(':ime:pixel')
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+
+    testImplementation project(':ime:base-test')
+}
+
+kotlin {
+    jvmToolchain(17)
+}

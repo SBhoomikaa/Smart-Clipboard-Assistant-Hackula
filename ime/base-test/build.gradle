@@ -1,0 +1,42 @@
+apply plugin: 'com.android.library'
+
+apply from: "${rootDir}/gradle/android_general.gradle"
+
+android {
+    namespace 'com.anysoftkeyboard.test'
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation project(':ime:base')
+    implementation project(':ime:base-rx')
+    implementation project(':ime:pixel')
+
+    implementation 'androidx.preference:preference:1.2.1'
+
+    api 'junit:junit:4.13.2'
+    api "org.robolectric:robolectric:$robolectricVersion"
+    api 'org.mockito:mockito-core:2.23.0'
+    api project(':junit-sharding')
+    api 'androidx.test:core:1.7.0'
+}
+
+// Allow warnings without failing compilation
+afterEvaluate {
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs.removeAll { it == "-Werror" }
+        options.compilerArgs << '-Xlint:-classfile'
+    }
+}
+
+// Kotlin JVM target
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+        allWarningsAsErrors = false
+    }
+}

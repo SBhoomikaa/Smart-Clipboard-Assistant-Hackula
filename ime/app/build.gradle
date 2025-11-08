@@ -1,0 +1,146 @@
+
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'androidx.navigation.safeargs'
+}
+ext {
+    override_app_id = 'com.menny.android.anysoftkeyboard'
+    shouldBePublished = true
+    override_release_key_alias = 'anysoftkeyboard'
+    closedTestingTrackName = 'alpha'
+    openTestingTrackName = 'beta'
+}
+
+
+
+// --- 2. Apply shared Gradle script ---
+apply from: "${rootDir}/gradle/apk_module.gradle"
+
+android {
+    namespace 'com.menny.android.anysoftkeyboard'
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+        allWarningsAsErrors = false
+    }
+
+    defaultConfig {
+        String support_email_address = System.getenv("ANYSOFTKEYBOARD_CRASH_REPORT_EMAIL")
+        println 'crash report email is: ' + support_email_address
+        buildConfigField "String", "CRASH_REPORT_EMAIL_ADDRESS", '"' + support_email_address + '"'
+        multiDexEnabled true
+    }
+
+    buildFeatures {
+        buildConfig = true
+        mlModelBinding true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles 'proguard-android-optimize.txt', 'proguard-rules.txt', 'proguard-anysoftkeyboard.txt', 'proguard-dont-obs.txt'
+            buildConfigField("boolean", "TESTING_BUILD", "false")
+
+            packagingOptions {
+                doNotStrip '**/anysoftkey*_jni.so'
+            }
+        }
+
+        debug {
+            buildConfigField("boolean", "TESTING_BUILD", "true")
+        }
+
+        canary {
+            initWith(buildTypes.release)
+            matchingFallbacks = ['release', 'debug']
+            buildConfigField("boolean", "TESTING_BUILD", "true")
+
+            packagingOptions {
+                doNotStrip '**/anysoftkey*_jni.so'
+            }
+        }
+
+        allAddOns {
+            initWith(buildTypes.debug)
+            matchingFallbacks = ['debug']
+            buildConfigField("boolean", "TESTING_BUILD", "true")
+        }
+    }
+
+    sourceSets.getByName('allAddOns') {
+        java.srcDirs += 'src/debug/java'
+        res.srcDirs += 'src/debug/res'
+    }
+}
+
+dependencies {
+    implementation project(':api')
+    implementation project(':addons:base')
+    implementation project(':addons:languages:english:pack')
+    implementation project(':ime:base')
+    implementation project(':ime:base-rx')
+    implementation project(':ime:nextword')
+    implementation project(':ime:notification')
+    implementation project(':ime:releaseinfo')
+    implementation project(':ime:addons')
+    implementation project(':ime:dictionaries')
+    implementation project(':ime:dictionaries:jnidictionaryv1')
+    implementation project(':ime:dictionaries:jnidictionaryv2')
+    implementation project(':ime:prefs')
+    implementation project(':ime:overlay')
+    implementation project(':ime:pixel')
+    implementation project(':ime:remote')
+    implementation project(':ime:gesturetyping')
+    implementation project(':ime:voiceime')
+    implementation project(':ime:chewbacca')
+    implementation project(':ime:permissions')
+    implementation project(':ime:fileprovider')
+
+    implementation 'androidx.fragment:fragment:1.8.9'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'androidx.legacy:legacy-support-v13:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.annotation:annotation:1.9.1'
+    implementation 'androidx.palette:palette:1.0.0'
+    implementation 'androidx.preference:preference:1.2.1'
+    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'com.jpardogo.materialtabstrip:library:1.1.1'
+    implementation 'androidx.autofill:autofill:1.3.0'
+    implementation 'androidx.viewpager2:viewpager2:1.1.0'
+
+    implementation 'androidx.navigation:navigation-fragment:2.9.3'
+    implementation 'androidx.navigation:navigation-ui:2.9.3'
+    implementation 'androidx.navigation:navigation-dynamic-features-fragment:2.9.3'
+
+    implementation 'androidx.multidex:multidex:2.0.1'
+
+    implementation 'org.tensorflow:tensorflow-lite-task-text:0.4.4'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.4.4'
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.4.4'
+
+
+    testImplementation project(path: ':ime:base-test')
+    testImplementation 'com.github.triplet.simpleprovider:simpleprovider:1.1.0'
+    testImplementation 'androidx.test.ext:junit:1.3.0'
+    def room_version = "2.6.1"
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+
+    rootProject.findProject(":addons").subprojects.forEach {
+        if (it.name == 'pack') {
+            allAddOnsImplementation it
+        }
+    }
+}
+
+kotlin {
+    jvmToolchain(17)
+}

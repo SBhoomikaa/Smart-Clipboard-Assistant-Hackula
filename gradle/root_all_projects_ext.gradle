@@ -1,0 +1,16 @@
+allprojects {
+    project.ext {
+        androidBuildTools = '36.0.0'
+        robolectricVersion = '4.14.1'
+
+        sideBySideNdkVersion = '27.2.12479018'
+
+        sdkTargetVersion = 35
+        sdkCompileVersion = 36
+        sdkMinimumVersion = 24
+
+        isCircleCi = 'true' == System.getenv("CIRCLECI")
+        isGithubAction = 'true' == System.getenv("GITHUB_ACTIONS")
+        isCi = isCircleCi || isGithubAction || 'true' == System.getenv("CI")
+    }
+}
